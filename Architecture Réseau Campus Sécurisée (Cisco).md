@@ -4,19 +4,21 @@
 
 ```mermaid
 graph TD
-    %% 1. Le Campus Principal à gauche
+    %% 1. La DMZ en haut à gauche (rattachée au HQ)
+    subgraph DMZ [DMZ - Server Farm]
+        Servers[(DHCP, DNS, WLC)]
+    end
+
+    %% 2. Le Campus Principal à gauche
     subgraph HQ [Main Campus - HeadQuarter]
         ASA_HQ[Pare-feu Périmétrique<br/>Cisco ASA]
         Core[Couche Core & Distribution<br/>HSRP + EtherChannel]
         Acc[Couche Accès<br/>VLANs 10-50]
+        WLC[WLC Zone]
         
         ASA_HQ --- Core
+        WLC --- Core
         Core --- Acc
-    end
-
-    %% 2. La DMZ placée de l'autre côté (vers la droite / le centre)
-    subgraph DMZ [DMZ - Server Farm]
-        Servers[(DHCP, DNS, WLC)]
     end
 
     %% 3. Le Réseau WAN / Internet au milieu
@@ -34,12 +36,11 @@ graph TD
         Dist_BR --- Acc_BR
     end
 
-    %% 5. Connexions et flux logiques
-    ASA_HQ --- Servers
+    %% 5. Connexions finales
+    Servers --- ASA_HQ
     ASA_HQ <-->|Tunnel VPN IPsec chiffré| ISP
     ASA_BR <-->|Tunnel VPN IPsec chiffré| ISP
 ```
-
 
 ## 🏗️ 1. Architecture Hiérarchique Modulaire (Cisco 3-Tiers)
 
