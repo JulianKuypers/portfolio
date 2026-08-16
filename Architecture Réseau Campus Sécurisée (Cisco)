@@ -1,6 +1,6 @@
 # 🎓 Architecture Réseau Campus Sécurisée (Cisco)
 
-**Objectif du projet : Concevoir et simuler une infrastructure réseau campus évolutive, sécurisée et redondante visant à unifier les communications de multiples départements (Health, Business, Engineering, etc.) tout en centralisant la gestion du réseau sans-fil.
+**Objectif du projet :** Concevoir et simuler une infrastructure réseau campus évolutive, sécurisée et redondante visant à unifier les communications de multiples départements (Health, Business, Engineering, etc.) tout en centralisant la gestion du réseau sans-fil.
 
 ```mermaid
 graph TD
@@ -39,9 +39,7 @@ graph TD
     ASA_BR <-->|Tunnel VPN IPsec chiffré| ISP
 ```
 
-
-
-#### 🏗️ 1. Architecture Hiérarchique Modulaire (Cisco 3-Tiers)
+## 🏗️ 1. Architecture Hiérarchique Modulaire (Cisco 3-Tiers)
 
 L'architecture repose sur le modèle hiérarchique Cisco à trois couches pour garantir l'évolutivité et faciliter le dépannage.
 
@@ -49,19 +47,19 @@ L'architecture repose sur le modèle hiérarchique Cisco à trois couches pour g
 * **Couche Distribution :** Agit comme frontière intelligente gérant le routage inter-VLAN et l'application des politiques de sécurité (ACLs). Les liaisons Trunks (802.1Q) utilisent le VLAN 666 comme VLAN natif pour renforcer la sécurité.
 * **Couche Accès :** Gère la connectivité des terminaux finaux. Les utilisateurs sont isolés dans des VLANs spécifiques (10 à 90) selon leur département. La topologie est protégée contre les boucles et les branchements sauvages via les protocoles BPDU Guard et PortFast. De plus, les ports inactifs sont confinés dans un VLAN "Blackhole" (999).
 
-#### 🔒 2. Sécurité Périmétrique et Inter-Sites
+## 🔒 2. Sécurité Périmétrique et Inter-Sites
 
 La sécurité a été pensée en couches successives, depuis le port physique jusqu'au réseau étendu.
 
 * **Pare-feux Cisco ASA :** Déploiement de zones de sécurité strictes bloquant par défaut tout trafic provenant de l'extérieur (Outside). Seul le trafic autorisé par des règles d'inspection spécifiques peut traverser.
 * **Tunnel VPN IPsec :** Création d'une interconnexion sécurisée entre le siège (HQ) et la filiale (Branch) au travers d'Internet. Le processus utilise IKEv1 (Phase 1) pour l'authentification par clé pré-partagée et IPsec (Phase 2) pour le chiffrement des données en transit.
 
-#### 📡 3. Gestion Centralisée du Sans-Fil
+## 📡 3. Gestion Centralisée du Sans-Fil
 
 * **Contrôleur WLC & CAPWAP :** Centralisation de toute la gestion des points d'accès Wi-Fi via un contrôleur dédié (WLC), évitant la configuration individuelle de chaque borne.
 * **Authentification Stricte :** Seules les bornes possédant un certificat validé (SSC/MIC) sont autorisées à rejoindre le contrôleur, empêchant l'ajout de bornes pirates et assurant une mobilité sécurisée.
 
-#### ⚙️ 4. Haute Disponibilité et Évolutivité
+## ⚙️ 4. Haute Disponibilité et Évolutivité
 
 L'infrastructure est conçue pour absorber les pannes et s'adapter automatiquement aux extensions.
 
