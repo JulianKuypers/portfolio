@@ -33,6 +33,7 @@ graph TD
     OPN --- Docker
     OPN <-->|Passerelle WAN / DHCP| ISP
     OPN <-->|Liaison Trunk 802.1Q| Switch
+```
 
 1. Virtualisation et Serveurs (Proxmox VE & Docker)
 
