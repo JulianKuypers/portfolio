@@ -2,8 +2,51 @@
 
 **Objectif du projet :** Déployer une infrastructure centralisée de Vidéo à la Demande (VOD), de la gestion des requêtes utilisateurs jusqu'à la diffusion sécurisée vers l'extérieur, en automatisant intégralement le pipeline d'acquisition et de traitement des données.
 
-![Schéma d'architecture de l'infrastructure](Lien_vers_ton_image_drawio_ici.png)
-*(Note : Pense à insérer un schéma Draw.io ici)*
+![Schéma d'architecture de l'infrastructure]
+graph TD
+    %% Définition des acteurs externes
+    User((Utilisateurs Externes))
+    Sources[(Sources Internet)]
+
+    %% Périmètre Réseau
+    subgraph Sécurité & Accès
+        CF[Cloudflare Tunnel]
+    end
+
+    %% Serveur Local
+    subgraph Hyperviseur Proxmox VE
+        
+        subgraph Frontend - Interfaces
+            JS[Jellyseerr - Portail]
+            JF[Jellyfin - Serveur VOD]
+        end
+        
+        subgraph Backend - Pipeline Automatisé
+            RD[Radarr - Orchestrateur]
+            PW[Prowlarr - Indexeurs]
+            QB[qBittorrent - Agent de DL]
+        end
+        
+        Disk[(Stockage Local /medias)]
+    end
+
+    %% Flux de connexion Frontend
+    User -- HTTPS --> CF
+    CF -. Proxy .-> JS
+    CF -. Proxy .-> JF
+
+    %% Flux de données Backend
+    JS -- 1. Envoi requête --> RD
+    RD -- 2. Demande de recherche --> PW
+    PW -- 3. Scrape --> Sources
+    RD -- 4. Ordre de DL --> QB
+    QB -- 5. Téléchargement --> Sources
+    
+    %% Gestion des fichiers
+    QB -- 6. Écriture --> Disk
+    RD -- 7. Renommage/Tri --> Disk
+    JF -- Lecture VOD --> Disk
+
 
 ---
 
