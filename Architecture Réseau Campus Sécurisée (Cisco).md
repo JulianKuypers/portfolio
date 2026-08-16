@@ -9,20 +9,22 @@ graph TD
     end
 
     subgraph HQ [Main Campus - HeadQuarter]
-        ASA_HQ[Pare-feu Périmétrique<br/>Cisco ASA]
         
-        subgraph DMZ [Server Farm]
-            Servers[(DHCP, DNS, WLC)]
+        subgraph DMZ [Zone DMZ]
+            Servers[(Server Farm<br/>DHCP, DNS, WLC)]
         end
+        
+        ASA_HQ[Pare-feu Périmétrique<br/>Cisco ASA]
         
         Core[Couche Core<br/>Switchs L3 + EtherChannel]
         Dist[Couche Distribution<br/>Routage Inter-VLAN + HSRP]
         Acc[Couche Accès<br/>Segmentation VLANs 10-50]
         
+        %% La DMZ est connectée au Pare-feu, pas au Core
+        Servers --- ASA_HQ
         ASA_HQ --- Core
         Core --- Dist
         Dist --- Acc
-        Core --- Servers
     end
 
     subgraph Branch [Branch Campus - Filiale]
