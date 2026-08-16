@@ -4,42 +4,48 @@
 
 ```mermaid
 graph TD
-    subgraph WAN [Zone WAN / Internet]
-        ISP((Réseau Public<br/>ISP))
+    %% 1. La DMZ placée tout à gauche
+    subgraph DMZ [Zone DMZ - Serveurs Publics]
+        Servers[(Ferme de Serveurs<br/>DNS, DHCP, Email, FTP)]
     end
 
+    %% 2. Le Campus Principal au centre
     subgraph HQ [Main Campus - HeadQuarter]
+        ASA_HQ[Pare-feu Périmétrique<br/>Cisco ASA - HQ_FW]
         
-        subgraph DMZ [Zone DMZ]
-            Servers[(Server Farm<br/>DHCP, DNS, WLC)]
+        subgraph WLC_Zone [WLC Zone]
+            WLC[Contrôleur Wi-Fi<br/>WLC-2504]
         end
         
-        ASA_HQ[Pare-feu Périmétrique<br/>Cisco ASA]
+        Core[Couche Core & Distribution<br/>HQ_MLSW1 & 2 + HSRP + EtherChannel]
+        Acc[Couche Accès<br/>VLANs 10 à 50]
         
-        Core[Couche Core<br/>Switchs L3 + EtherChannel]
-        Dist[Couche Distribution<br/>Routage Inter-VLAN + HSRP]
-        Acc[Couche Accès<br/>Segmentation VLANs 10-50]
-        
-        %% La DMZ est connectée au Pare-feu, pas au Core
-        Servers --- ASA_HQ
         ASA_HQ --- Core
-        Core --- Dist
-        Dist --- Acc
+        WLC --- Core
+        Core --- Acc
     end
 
+    %% 3. Le WAN à droite du HQ
+    subgraph WAN [Zone WAN / Internet]
+        ISP((Réseau Public<br/>Routeurs ISP))
+    end
+
+    %% 4. La Filiale tout à droite
     subgraph Branch [Branch Campus - Filiale]
         ASA_BR[Pare-feu Périmétrique<br/>Cisco ASA]
         Dist_BR[Couche Distribution / Routage]
-        Acc_BR[Couche Accès<br/>Segmentation VLANs 60-90]
+        Acc_BR[Couche Accès<br/>VLANs 60-90]
 
         ASA_BR --- Dist_BR
         Dist_BR --- Acc_BR
     end
 
-    %% Tunnels et Connexions
+    %% Les liaisons qui forcent l'affichage de gauche à droite
+    Servers --- ASA_HQ
     ASA_HQ <-->|Tunnel VPN IPsec chiffré| ISP
-    ASA_BR <-->|Tunnel VPN IPsec chiffré| ISP
+    ISP <-->|Tunnel VPN IPsec chiffré| ASA_BR
 ```
+
 
 ## 🏗️ 1. Architecture Hiérarchique Modulaire (Cisco 3-Tiers)
 
