@@ -4,17 +4,7 @@
 
 ```mermaid
 graph TD
-    %% 1. La DMZ placée au centre-haut (juste au-dessus du lien central)
-    subgraph DMZ [DMZ - Server Farm]
-        Servers[(DHCP, DNS, WLC)]
-    end
-
-    %% 2. Le Réseau WAN / Internet bien au milieu
-    subgraph WAN [Zone WAN / Internet]
-        ISP((Réseau Public<br/>ISP))
-    end
-
-    %% 3. Le Campus Principal à gauche
+    %% 1. Le Campus Principal à gauche
     subgraph HQ [Main Campus - HeadQuarter]
         ASA_HQ[Pare-feu Périmétrique<br/>Cisco ASA]
         Core[Couche Core & Distribution<br/>HSRP + EtherChannel]
@@ -22,6 +12,16 @@ graph TD
         
         ASA_HQ --- Core
         Core --- Acc
+    end
+
+    %% 2. La DMZ placée de l'autre côté (vers la droite / le centre)
+    subgraph DMZ [DMZ - Server Farm]
+        Servers[(DHCP, DNS, WLC)]
+    end
+
+    %% 3. Le Réseau WAN / Internet au milieu
+    subgraph WAN [Zone WAN / Internet]
+        ISP((Réseau Public<br/>ISP))
     end
 
     %% 4. La Filiale à droite
@@ -35,7 +35,7 @@ graph TD
     end
 
     %% 5. Connexions et flux logiques
-    Servers --- ASA_HQ
+    ASA_HQ --- Servers
     ASA_HQ <-->|Tunnel VPN IPsec chiffré| ISP
     ASA_BR <-->|Tunnel VPN IPsec chiffré| ISP
 ```
