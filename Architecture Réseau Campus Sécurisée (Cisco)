@@ -1,8 +1,7 @@
-### 🎓 Architecture Réseau Campus Sécurisée (Cisco)
+# 🎓 Architecture Réseau Campus Sécurisée (Cisco)
 
-**Objectif du projet :** Concevoir et simuler une infrastructure réseau campus évolutive, sécurisée et redondante visant à unifier les communications de multiples départements (Health, Business, Engineering, etc.) tout en centralisant la gestion du réseau sans-fil.
+**Objectif du projet : Concevoir et simuler une infrastructure réseau campus évolutive, sécurisée et redondante visant à unifier les communications de multiples départements (Health, Business, Engineering, etc.) tout en centralisant la gestion du réseau sans-fil.
 
-```mermaid
 graph TD
     subgraph WAN [Zone WAN / Internet]
         ISP((Réseau Public<br/>ISP))
@@ -37,7 +36,7 @@ graph TD
     %% Tunnels et Connexions
     ASA_HQ <-->|Tunnel VPN IPsec chiffré| ISP
     ASA_BR <-->|Tunnel VPN IPsec chiffré| ISP
-```
+
 
 #### 🏗️ 1. Architecture Hiérarchique Modulaire (Cisco 3-Tiers)
 
