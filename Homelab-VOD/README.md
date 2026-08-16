@@ -1,8 +1,6 @@
 # 🚀 Infrastructure VOD Auto-hébergée et Pipeline d'Automatisation
 
 **Objectif du projet :** Déployer une infrastructure centralisée de Vidéo à la Demande (VOD), de la gestion des requêtes utilisateurs jusqu'à la diffusion sécurisée vers l'extérieur, en automatisant intégralement le pipeline d'acquisition et de traitement des données.
-
-![Schéma d'architecture de l'infrastructure]
 graph TD
     %% Définition des acteurs externes
     User((Utilisateurs Externes))
@@ -47,8 +45,6 @@ graph TD
     RD -- 7. Renommage/Tri --> Disk
     JF -- Lecture VOD --> Disk
 
-
----
 
 ## 🏗️ 1. Infrastructure et Virtualisation
 La base de l'infrastructure repose sur une séparation stricte des services pour garantir stabilité et évolutivité.
