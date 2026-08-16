@@ -5,41 +5,48 @@
 ```mermaid
 graph TD
     %% Définition des acteurs externes
-    subgraph WAN [Zone WAN / Internet]
-        ISP((Réseau Public<br/>ISP))
+    User((Utilisateurs Externes))
+    Sources[(Sources Internet)]
+
+    %% Périmètre Réseau
+    subgraph Sécurité & Accès
+        CF[Cloudflare Tunnel]
     end
 
-    %% Périmètre Réseau HQ
-    subgraph HQ [Main Campus - HeadQuarter]
-        ASA_HQ[Pare-feu Périmétrique<br/>Cisco ASA]
+    %% Serveur Local
+    subgraph Hyperviseur Proxmox VE
         
-        subgraph DMZ [Server Farm]
-            Servers[(DHCP, DNS, WLC)]
+        subgraph Frontend - Interfaces
+            JS[Jellyseerr - Portail]
+            JF[Jellyfin - Serveur VOD]
         end
         
-        Core[Couche Core<br/>Switchs L3 + EtherChannel]
-        Dist[Couche Distribution<br/>Routage Inter-VLAN + HSRP]
-        Acc[Couche Accès<br/>Segmentation VLANs 10-50]
+        subgraph Backend - Pipeline Automatisé
+            RD[Radarr - Orchestrateur]
+            PW[Prowlarr - Indexeurs]
+            QB[qBittorrent - Agent de DL]
+        end
         
-        ASA_HQ --- Core
-        Core --- Dist
-        Dist --- Acc
-        Core --- Servers
+        Disk[(Stockage Local /medias)]
     end
 
-    %% Périmètre Réseau Branch
-    subgraph Branch [Branch Campus - Filiale]
-        ASA_BR[Pare-feu Périmétrique<br/>Cisco ASA]
-        Dist_BR[Couche Distribution / Routage]
-        Acc_BR[Couche Accès<br/>Segmentation VLANs 60-90]
+    %% Flux de connexion Frontend
+    User -- HTTPS --> CF
+    CF -. Proxy .-> JS
+    CF -. Proxy .-> JF
 
-        ASA_BR --- Dist_BR
-        Dist_BR --- Acc_BR
-    end
-
-    %% Tunnels et Connexions
-    ASA_HQ <-->|Tunnel VPN IPsec chiffré| ISP
-    ASA_BR <-->|Tunnel VPN IPsec chiffré| ISP
+    %% Flux de données Backend
+    JS -- 1. Envoi requête --> RD
+    RD -- 2. Demande de recherche --> PW
+    PW -- 3. Scrape --> Sources
+    RD -- 4. Ordre de DL --> QB
+    QB -- 5. Téléchargement --> Sources
+    
+    %% Gestion des fichiers
+    QB -- 6. Écriture --> Disk
+    RD -- 7. Renommage/Tri --> Disk
+    JF -- Lecture VOD --> Disk
+```
 
 
 ## 🏗️ 1. Infrastructure et Virtualisation
