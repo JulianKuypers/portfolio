@@ -43,7 +43,7 @@ L'infrastructure repose sur un hyperviseur bare-metal permettant une gestion gra
 
     Conteneurisation (Micro-services) : Gestion de conteneurs Docker pour le déploiement de services auto-hébergés, incluant la conception d'un pipeline VOD complet (Jellyfin, Radarr, Prowlarr) optimisant l'allocation des ressources matérielles.
 
-🔒 2. Routage Avancé et Sécurité Périmétrique (OPNsense)
+ 2. Routage Avancé et Sécurité Périmétrique (OPNsense)
 
 La sécurité périmétrique et le routage de niveau 3 (L3) sont centralisés au sein d'une appliance de sécurité virtualisée.
 
@@ -51,7 +51,7 @@ La sécurité périmétrique et le routage de niveau 3 (L3) sont centralisés au
 
     Contrôle d'Accès & Tunnels : Élaboration de politiques de pare-feu (Firewall Rules) appliquant le principe du moindre privilège pour bloquer le trafic inter-réseaux non sollicité, et intégration de tunnels sécurisés (Cloudflare) pour masquer l'infrastructure publique.
 
-📡 3. Segmentation Réseau et Topologie (VLANs & Switch)
+ 3. Segmentation Réseau et Topologie (VLANs & Switch)
 
 Le réseau physique est segmenté de manière logique pour isoler les flux de données et confiner les équipements potentiellement vulnérables.
 
@@ -59,7 +59,7 @@ Le réseau physique est segmenté de manière logique pour isoler les flux de do
 
     Distribution Physique : Interconnexion de l'architecture via un switch administrable TP-Link, distribuant les réseaux virtuels de la machine Proxmox vers l'infrastructure CPL (Devolo) et les terminaux finaux.
 
-⚙️ 4. Gestion Centralisée du Sans-Fil et Maintenance (Omada)
+ 4. Gestion Centralisée du Sans-Fil et Maintenance (Omada)
 
 Le laboratoire est pensé pour être évolutif et maintenu avec des standards professionnels de documentation et de gestion.
 
