@@ -1,54 +1,45 @@
-# 🚀 Infrastructure VOD Auto-hébergée et Pipeline d'Automatisation
+# 🎓 Architecture Réseau Campus Sécurisée (Cisco)
 
-**Objectif du projet : Déployer une infrastructure centralisée de Vidéo à la Demande (VOD), de la gestion des requêtes utilisateurs jusqu'à la diffusion sécurisée vers l'extérieur, en automatisant intégralement le pipeline d'acquisition et de traitement des données.
+**Objectif du projet :** Concevoir et simuler une infrastructure réseau campus évolutive, sécurisée et redondante visant à unifier les communications de multiples départements (Health, Business, Engineering, etc.) tout en centralisant la gestion du réseau sans-fil.
 
 ```mermaid
 graph TD
     %% Définition des acteurs externes
-    User((Utilisateurs Externes))
-    Sources[(Sources Internet)]
-
-    %% Périmètre Réseau
-    subgraph Sécurité & Accès
-        CF[Cloudflare Tunnel]
+    subgraph WAN [Zone WAN / Internet]
+        ISP((Réseau Public<br/>ISP))
     end
 
-    %% Serveur Local
-    subgraph Hyperviseur Proxmox VE
+    %% Périmètre Réseau HQ
+    subgraph HQ [Main Campus - HeadQuarter]
+        ASA_HQ[Pare-feu Périmétrique<br/>Cisco ASA]
         
-        subgraph Frontend - Interfaces
-            JS[Jellyseerr - Portail]
-            JF[Jellyfin - Serveur VOD]
+        subgraph DMZ [Server Farm]
+            Servers[(DHCP, DNS, WLC)]
         end
         
-        subgraph Backend - Pipeline Automatisé
-            RD[Radarr - Orchestrateur]
-            PW[Prowlarr - Indexeurs]
-            QB[qBittorrent - Agent de DL]
-        end
+        Core[Couche Core<br/>Switchs L3 + EtherChannel]
+        Dist[Couche Distribution<br/>Routage Inter-VLAN + HSRP]
+        Acc[Couche Accès<br/>Segmentation VLANs 10-50]
         
-        Disk[(Stockage Local /medias)]
+        ASA_HQ --- Core
+        Core --- Dist
+        Dist --- Acc
+        Core --- Servers
     end
 
-    %% Flux de connexion Frontend
-    User -- HTTPS --> CF
-    CF -. Proxy .-> JS
-    CF -. Proxy .-> JF
+    %% Périmètre Réseau Branch
+    subgraph Branch [Branch Campus - Filiale]
+        ASA_BR[Pare-feu Périmétrique<br/>Cisco ASA]
+        Dist_BR[Couche Distribution / Routage]
+        Acc_BR[Couche Accès<br/>Segmentation VLANs 60-90]
 
-    %% Flux de données Backend
-    JS -- 1. Envoi requête --> RD
-    RD -- 2. Demande de recherche --> PW
-    PW -- 3. Scrape --> Sources
-    RD -- 4. Ordre de DL --> QB
-    QB -- 5. Téléchargement --> Sources
-    
-    %% Gestion des fichiers
-    QB -- 6. Écriture --> Disk
-    RD -- 7. Renommage/Tri --> Disk
-    JF -- Lecture VOD --> Disk
-```
+        ASA_BR --- Dist_BR
+        Dist_BR --- Acc_BR
+    end
 
-   
+    %% Tunnels et Connexions
+    ASA_HQ <-->|Tunnel VPN IPsec chiffré| ISP
+    ASA_BR <-->|Tunnel VPN IPsec chiffré| ISP
 
 
 ## 🏗️ 1. Infrastructure et Virtualisation
