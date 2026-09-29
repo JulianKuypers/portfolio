@@ -1,71 +1,57 @@
-# 🎓 Architecture Réseau Campus Sécurisée (Cisco)
+# Architecture réseau campus sécurisée (Cisco)
 
-**Objectif du projet :** Concevoir et simuler une infrastructure réseau campus évolutive, sécurisée et redondante visant à unifier les communications de multiples départements (Health, Business, Engineering, etc.) tout en centralisant la gestion du réseau sans-fil.
+**Objectif :** concevoir et simuler dans **Cisco Packet Tracer** un réseau d'entreprise multi-sites (siège + filiale) segmenté par département (Health, Business, Engineering…), sécurisé et redondant, avec une gestion centralisée du Wi-Fi.
 
 ```mermaid
 graph TD
-    %% 1. La DMZ en haut à gauche (rattachée au HQ)
-    subgraph DMZ [DMZ - Server Farm]
+    subgraph DMZ [Zone serveurs]
         Servers[(DHCP, DNS, WLC)]
     end
 
-    %% 2. Le Campus Principal à gauche
-    subgraph HQ [Main Campus - HeadQuarter]
-        ASA_HQ[Pare-feu Périmétrique<br/>Cisco ASA]
-        Core[Couche Core & Distribution<br/>HSRP + EtherChannel]
+    subgraph HQ [Siège - Main Campus]
+        ASA_HQ[Pare-feu Cisco ASA]
+        Core[Core & Distribution<br/>HSRP + EtherChannel]
         Acc[Couche Accès<br/>VLANs 10-50]
-        WLC[WLC Zone]
-        
+        WLC[Zone WLC]
         ASA_HQ --- Core
         WLC --- Core
         Core --- Acc
     end
 
-    %% 3. Le Réseau WAN / Internet au milieu
-    subgraph WAN [Zone WAN / Internet]
-        ISP((Réseau Public<br/>ISP))
+    subgraph WAN [Internet]
+        ISP((Réseau public<br/>ISP))
     end
 
-    %% 4. La Filiale à droite
-    subgraph Branch [Branch Campus - Filiale]
-        ASA_BR[Pare-feu Périmétrique<br/>Cisco ASA]
-        Dist_BR[Couche Distribution / Routage]
+    subgraph Branch [Filiale - Branch]
+        ASA_BR[Pare-feu Cisco ASA]
+        Dist_BR[Distribution / Routage]
         Acc_BR[Couche Accès<br/>VLANs 60-90]
-
         ASA_BR --- Dist_BR
         Dist_BR --- Acc_BR
     end
 
-    %% 5. Connexions finales
     Servers --- ASA_HQ
-    ASA_HQ <-->|Tunnel VPN IPsec chiffré| ISP
-    ASA_BR <-->|Tunnel VPN IPsec chiffré| ISP
+    ASA_HQ <-->|Tunnel VPN IPsec| ISP
+    ASA_BR <-->|Tunnel VPN IPsec| ISP
 ```
 
-## 🏗️ 1. Architecture Hiérarchique Modulaire (Cisco 3-Tiers)
+## 1. Architecture hiérarchique (modèle Cisco 3 tiers)
 
-L'architecture repose sur le modèle hiérarchique Cisco à trois couches pour garantir l'évolutivité et faciliter le dépannage.
+- **Core :** épine dorsale du réseau, liens agrégés en EtherChannel pour la redondance et la bande passante, sans ACL pour ne pas ralentir la commutation.
+- **Distribution :** routage inter-VLAN et application des ACLs. Les trunks 802.1Q utilisent le VLAN 666 comme VLAN natif.
+- **Accès :** chaque département est isolé dans son VLAN (10 à 50 au siège, 60 à 90 à la filiale). BPDU Guard et PortFast protègent contre les boucles et les branchements non autorisés, et les ports inutilisés sont placés dans un VLAN « blackhole » (999).
 
-* **Couche Core (Cœur) :** Constitue l'épine dorsale du réseau, dédiée à la commutation ultra-rapide entre les services et la distribution. Les équipements sont interconnectés via EtherChannel pour la tolérance aux pannes et maximiser la bande passante, sans être ralentis par des politiques ACL complexes.
-* **Couche Distribution :** Agit comme frontière intelligente gérant le routage inter-VLAN et l'application des politiques de sécurité (ACLs). Les liaisons Trunks (802.1Q) utilisent le VLAN 666 comme VLAN natif pour renforcer la sécurité.
-* **Couche Accès :** Gère la connectivité des terminaux finaux. Les utilisateurs sont isolés dans des VLANs spécifiques (10 à 90) selon leur département. La topologie est protégée contre les boucles et les branchements sauvages via les protocoles BPDU Guard et PortFast. De plus, les ports inactifs sont confinés dans un VLAN "Blackhole" (999).
+## 2. Sécurité périmétrique et inter-sites
 
-## 🔒 2. Sécurité Périmétrique et Inter-Sites
+- **Pare-feu Cisco ASA :** tout trafic venant de l'extérieur (outside) est bloqué par défaut, seuls les flux autorisés par des règles d'inspection passent.
+- **VPN IPsec site à site :** tunnel chiffré entre le siège et la filiale à travers Internet (IKEv1 avec clé pré-partagée en phase 1, IPsec en phase 2).
 
-La sécurité a été pensée en couches successives, depuis le port physique jusqu'au réseau étendu.
+## 3. Wi-Fi centralisé
 
-* **Pare-feux Cisco ASA :** Déploiement de zones de sécurité strictes bloquant par défaut tout trafic provenant de l'extérieur (Outside). Seul le trafic autorisé par des règles d'inspection spécifiques peut traverser.
-* **Tunnel VPN IPsec :** Création d'une interconnexion sécurisée entre le siège (HQ) et la filiale (Branch) au travers d'Internet. Le processus utilise IKEv1 (Phase 1) pour l'authentification par clé pré-partagée et IPsec (Phase 2) pour le chiffrement des données en transit.
+- **Contrôleur WLC et CAPWAP :** tous les points d'accès sont gérés depuis un contrôleur central, sans configuration borne par borne.
 
-## 📡 3. Gestion Centralisée du Sans-Fil
+## 4. Haute disponibilité et services
 
-* **Contrôleur WLC & CAPWAP :** Centralisation de toute la gestion des points d'accès Wi-Fi via un contrôleur dédié (WLC), évitant la configuration individuelle de chaque borne.
-* **Authentification Stricte :** Seules les bornes possédant un certificat validé (SSC/MIC) sont autorisées à rejoindre le contrôleur, empêchant l'ajout de bornes pirates et assurant une mobilité sécurisée.
-
-## ⚙️ 4. Haute Disponibilité et Évolutivité
-
-L'infrastructure est conçue pour absorber les pannes et s'adapter automatiquement aux extensions.
-
-* **Redondance de Passerelle (HSRP) :** Implémentation du protocole HSRP sur la couche distribution, créant une passerelle virtuelle pour un basculement instantané et transparent en cas de panne matérielle d'un routeur.
-* **Routage Dynamique (OSPF) :** Automatisation des échanges de routes entre les pare-feux et les routeurs. Cela permet au réseau de découvrir dynamiquement de nouveaux sous-réseaux (comme ceux de la filiale) sans configuration statique fastidieuse.
-* **Services Centralisés (DHCP Relay) :** Utilisation de la fonction "ip helper-address" pour intercepter les requêtes DHCP locales et les relayer vers une ferme de serveurs centralisée en DMZ, simplifiant considérablement l'administration système.
+- **HSRP :** passerelle virtuelle partagée entre deux équipements de distribution, pour basculer automatiquement en cas de panne.
+- **OSPF :** routage dynamique entre les pare-feux et les routeurs. Les réseaux de la filiale sont appris automatiquement.
+- **DHCP Relay :** `ip helper-address` relaie les requêtes DHCP des VLANs vers les serveurs centralisés.
