@@ -1,6 +1,6 @@
 # Infrastructure réseau & virtualisation (Homelab)
 
-**Objectif :** concevoir et administrer un réseau domestique segmenté, avec un pare-feu virtualisé, une séparation stricte des flux par VLAN et une documentation de la topologie physique et logique.
+**Objectif :** concevoir et administrer un réseau domestique segmenté, avec un pare-feu virtualisé et une séparation stricte des flux par VLAN.
 
 ```mermaid
 graph TD
@@ -49,6 +49,4 @@ graph TD
 - Les points d'accès Omada associent chaque SSID à son VLAN.
 - Des adaptateurs CPL Devolo étendent le réseau vers les terminaux éloignés.
 
-## 4. Documentation
 
-- Topologie physique et logique documentée avec Draw.io.
