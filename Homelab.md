@@ -1,68 +1,54 @@
-# 🏠 Infrastructure Réseau & Virtualisation (Homelab)
+# Infrastructure réseau & virtualisation (Homelab)
 
-**Objectif du projet :** Concevoir, déployer et administrer une infrastructure réseau domestique de niveau entreprise, axée sur la sécurité périmétrique, la virtualisation des services, l'auto-hébergement et la segmentation avancée du trafic.
+**Objectif :** concevoir et administrer un réseau domestique segmenté, avec un pare-feu virtualisé, une séparation stricte des flux par VLAN et une documentation de la topologie physique et logique.
 
 ```mermaid
 graph TD
-    %% 1. Zone Serveurs et Services
-    subgraph DMZ [Services Auto-hébergés]
-        Docker[(Conteneurs LXC/Docker<br/>Infrastructure VOD, Tunnels)]
+    subgraph WAN [Zone WAN]
+        ISP((Modem FAI))
     end
 
-    %% 2. Cœur de réseau virtualisé
-    subgraph Hypervisor [Hyperviseur Bare-Metal - Proxmox VE]
-        OPN[Pare-feu Périmétrique L3<br/>OPNsense VM]
+    subgraph Hyperviseur [Hyperviseur Proxmox VE]
+        OPN[Pare-feu OPNsense - VM]
+        LAB[VMs et conteneurs LXC de lab]
     end
 
-    %% 3. Zone WAN / Internet
-    subgraph WAN [Zone WAN / Internet]
-        ISP((Réseau Public<br/>Modem FAI))
-    end
-
-    %% 4. Couche Accès Physique
-    subgraph Access [Couche Distribution & Accès - VLANs 1, 20, 30]
-        Switch[Switch Administrable<br/>TP-Link]
-        AP[Points d'Accès Wi-Fi<br/>Omada]
-        CPL[Infrastructure CPL<br/>Devolo vers Terminaux]
-
+    subgraph Acces [Distribution et accès - VLANs 1, 20, 30]
+        Switch[Switch administrable TP-Link]
+        AP[Points d'accès Wi-Fi Omada]
+        CPL[CPL Devolo vers terminaux]
         Switch --- AP
         Switch --- CPL
     end
 
-    %% 5. Connexions finales
-    OPN --- Docker
-    OPN <-->|Passerelle WAN / DHCP| ISP
-    OPN <-->|Liaison Trunk 802.1Q| Switch
+    ISP <-->|WAN / DHCP| OPN
+    OPN <-->|Trunk 802.1Q| Switch
+    OPN --- LAB
 ```
 
-1. Virtualisation et Serveurs (Proxmox VE & Docker)
+## 1. Virtualisation (Proxmox VE)
 
-L'infrastructure repose sur un hyperviseur bare-metal permettant une gestion granulaire des ressources et une isolation des environnements.
+- Hyperviseur Proxmox VE installé en bare-metal.
+- OPNsense tourne en machine virtuelle et sert de routeur principal.
+- Machines virtuelles et conteneurs LXC pour les services de lab et les tests.
 
-    Hyperviseur Type 1 : Déploiement et administration d'un environnement complet sous Proxmox VE, hébergeant le routeur principal (VM) ainsi que les divers conteneurs (LXC).
+## 2. Routage et sécurité (OPNsense)
 
-    Conteneurisation (Micro-services) : Gestion de conteneurs Docker pour le déploiement de services auto-hébergés, incluant la conception d'un pipeline VOD complet (Jellyfin, Radarr, Prowlarr) optimisant l'allocation des ressources matérielles.
+- OPNsense assure le routage inter-VLAN, le NAT et le DHCP de chaque réseau.
+- Les règles de pare-feu appliquent le moindre privilège : tout trafic inter-VLAN est bloqué par défaut, seuls les flux nécessaires sont autorisés.
 
- 2. Routage Avancé et Sécurité Périmétrique (OPNsense)
+| VLAN | Réseau | Rôle | Accès |
+|---|---|---|---|
+| 1 | LAN privé | Postes principaux | Internet + administration |
+| 20 | IoT | Objets connectés | Internet uniquement, aucun accès au LAN |
+| 30 | Invités | Wi-Fi invités | Internet uniquement, totalement isolé |
 
-La sécurité périmétrique et le routage de niveau 3 (L3) sont centralisés au sein d'une appliance de sécurité virtualisée.
+## 3. Segmentation et distribution
 
-    Pare-feu Virtualisé : Configuration d'OPNsense en tant que passerelle principale pour filtrer le trafic entrant et sortant, gérer les traductions d'adresses (NAT) et assurer la distribution DHCP.
+- Le switch TP-Link reçoit les VLANs depuis OPNsense via un lien trunk 802.1Q.
+- Les points d'accès Omada associent chaque SSID à son VLAN.
+- Des adaptateurs CPL Devolo étendent le réseau vers les terminaux éloignés.
 
-    Contrôle d'Accès & Tunnels : Élaboration de politiques de pare-feu (Firewall Rules) appliquant le principe du moindre privilège pour bloquer le trafic inter-réseaux non sollicité, et intégration de tunnels sécurisés (Cloudflare) pour masquer l'infrastructure publique.
+## 4. Documentation
 
- 3. Segmentation Réseau et Topologie (VLANs & Switch)
-
-Le réseau physique est segmenté de manière logique pour isoler les flux de données et confiner les équipements potentiellement vulnérables.
-
-    Isolation Logique (802.1Q) : Création et routage de sous-réseaux étanches (LAN Privé, VLAN IoT 20, VLAN Invités 30) protégeant les terminaux principaux des appareils connectés moins sécurisés.
-
-    Distribution Physique : Interconnexion de l'architecture via un switch administrable TP-Link, distribuant les réseaux virtuels de la machine Proxmox vers l'infrastructure CPL (Devolo) et les terminaux finaux.
-
- 4. Gestion Centralisée du Sans-Fil et Maintenance (Omada)
-
-Le laboratoire est pensé pour être évolutif et maintenu avec des standards professionnels de documentation et de gestion.
-
-    Écosystème Wi-Fi Professionnel : Déploiement et intégration de points d'accès TP-Link Omada pour une couverture sans-fil optimale, cartographiant directement les SSID virtuels sur leurs VLANs respectifs.
-
-    Administration Continue : Modélisation et documentation exhaustive de l'architecture physique et logique via Draw.io, facilitant grandement les opérations de maintenance et le dépannage (troubleshooting) du réseau.
+- Topologie physique et logique documentée avec Draw.io.
